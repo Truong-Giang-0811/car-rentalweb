@@ -5,7 +5,7 @@ import Footer from "../components/Footer.jsx";
 import { searchPublicCars } from "../services/carsService";
 import LocationAutocomplete from "../components/LocationAutocomplete.jsx";
 import RentalDateModal from "../components/RentalDateModal.jsx";
-
+import { BASE_URL } from "../constants/config";
 function HomeCustomer() {
   const navigate = useNavigate();
 
@@ -291,7 +291,10 @@ function HomeCustomer() {
       null;
 
     if (!imagePath) return "/images/car-placeholder.jpg";
-    return imagePath;
+
+    if (imagePath.startsWith("http")) return imagePath;
+
+    return `${BASE_URL}${imagePath}`;
   };
 
   const normalizeCar = (car) => {
