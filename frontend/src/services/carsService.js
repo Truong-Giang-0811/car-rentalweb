@@ -21,6 +21,31 @@ export const updateCar = async (id, payload) => {
   }
 };
 
+// Thêm vào carsService.js
+export const uploadToCloudinary = async (file) => {
+  const cloudName = "dn0okc5g1";
+  const uploadPreset = "car_rental_upload";
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+    const data = await response.json();
+    return data.secure_url;
+  } catch (error) {
+    console.error("Cloudinary Upload Error:", error);
+    throw new Error("Không thể tải ảnh lên Cloudinary");
+  }
+};
+
 // Xóa xe
 export const deleteCar = async (id) => {
   try {
@@ -89,7 +114,7 @@ export const searchPublicCars = async (params = {}) => {
   try {
     if (typeof params === "string") {
       const response = await api.get(
-        `/public/cars?location=${encodeURIComponent(params)}`
+        `/public/cars?location=${encodeURIComponent(params)}`,
       );
       return response.data;
     }

@@ -6,6 +6,7 @@ import {
   getCarDetail,
   uploadImage,
   addCarImage,
+  uploadToCloudinary,
 } from "../../services/carsService";
 import { carBrands } from "../../constants/mockdata";
 
@@ -207,15 +208,13 @@ function AddCar() {
   // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // 1. Kiểm tra tính hợp lệ của form trước khi xử lý
     if (!validateForm()) return;
 
     setLoading(true);
-    setProgress(10); // Bắt đầu tiến trình
+    setProgress(10);
 
     try {
-      // --- BƯỚC 1: XỬ LÝ UPLOAD ẢNH MỚI ---
+      // --- BƯỚC 1: UPLOAD ẢNH LÊN CLOUDINARY ---
       const uploadedImages = [];
       const imageTypes = [
         { key: "front", type: 0 },
@@ -226,86 +225,54 @@ function AddCar() {
 
       for (let i = 0; i < imageTypes.length; i++) {
         const { key, type } = imageTypes[i];
-
-        // QUAN TRỌNG: Chỉ upload nếu imageFiles[key] có giá trị (người dùng đã chọn file mới)
-        // Nếu là ảnh cũ từ server, imageFiles[key] sẽ là null và bước này bị bỏ qua
         if (imageFiles[key]) {
-          try {
-            const imageUrl = await uploadImage(imageFiles[key]);
-            uploadedImages.push({
-              url: imageUrl,
-              type: type,
-              sortOrder: i, // Hoặc dùng uploadedImages.length tùy logic của bạn
-            });
-          } catch (uploadError) {
-            console.error(`Lỗi upload ảnh ${key}:`, uploadError);
-            // Không ngắt tiến trình chính nếu chỉ lỗi 1 ảnh
-          }
+          // Hàm này giờ trả về link Cloudinary trực tiếp
+          const imageUrl = await uploadToCloudinary(imageFiles[key]);
+          uploadedImages.push({
+            url: imageUrl, // Đây là link https://...
+            type: type,
+            sortOrder: i,
+          });
         }
-        // Cập nhật progress giả lập (từ 10% đến 50%)
-        setProgress(10 + ((i + 1) / imageTypes.length) * 40);
+        setProgress(10 + ((i + 1) / imageTypes.length) * 50);
       }
 
-      // --- BƯỚC 2: CẬP NHẬT HOẶC TẠO MỚI THÔNG TIN XE (TEXT) ---
+      // --- BƯỚC 2: LƯU THÔNG TIN XE ---
       const carPayload = {
         ...carDetails,
-        fuelConsumption: carDetails.consumption
-          ? parseFloat(carDetails.consumption)
-          : 0,
+        fuelConsumption: parseFloat(carDetails.consumption) || 0,
         pricePerDay: parseInt(price.perDay) || 0,
         overtimePrice: parseInt(price.overtime) || 0,
         year: parseInt(carDetails.year),
         seats: parseInt(carDetails.seats),
       };
 
-      let carId;
-      if (editMode && editingCarId) {
-        // Chế độ Sửa: Gọi API cập nhật thông tin cơ bản
+      let carId = editMode ? editingCarId : null;
+      if (editMode) {
         await updateCar(editingCarId, carPayload);
-        carId = editingCarId;
       } else {
-        // Chế độ Thêm mới: Gọi API tạo xe và lấy ID trả về
         const carResponse = await createCar(carPayload);
-        carId = carResponse.id || carResponse.carId;
+        carId = carResponse.id;
       }
 
-      setProgress(80);
-
-      // --- BƯỚC 3: LIÊN KẾT ẢNH MỚI VỚI XE ---
-      // Chỉ gọi API thêm ảnh nếu thực sự có ảnh mới được upload thành công ở Bước 1
+      // --- BƯỚC 3: LƯU LINK ẢNH VÀO DATABASE ---
       if (uploadedImages.length > 0) {
-        await Promise.allSettled(
-          uploadedImages.map((imageData) => addCarImage(carId, imageData)),
-        );
+        // Backend của bạn (CarImagesController) nhận JSON có field "Url"
+        await Promise.all(uploadedImages.map((img) => addCarImage(carId, img)));
       }
 
-      // --- BƯỚC CUỐI: THÔNG BÁO VÀ ĐIỀU HƯỚNG ---
       setProgress(100);
       addNotification(
         "success",
         editMode ? "Cập nhật thành công!" : "Thêm xe thành công!",
-        `Dữ liệu xe ${carDetails.brand} ${carDetails.model} đã được lưu.`,
       );
 
-      if (editMode) {
-        // Nếu đang ở trang sửa, đợi 1.5s để người dùng thấy thông báo rồi chuyển trang
-        setTimeout(() => {
-          navigate("/admin/cars");
-        }, 1500);
-      } else {
-        // Nếu là thêm mới, reset form để nhập xe khác
-        resetForm();
-      }
+      // Điều hướng
+      setTimeout(() => navigate(editMode ? "/admin/cars" : "/my-cars"), 1500);
     } catch (error) {
-      console.error("Lỗi quy trình lưu dữ liệu:", error);
-      addNotification(
-        "error",
-        "Thao tác thất bại",
-        error.message || "Đã có lỗi xảy ra, vui lòng thử lại.",
-      );
+      addNotification("error", "Lỗi", error.message);
     } finally {
       setLoading(false);
-      // Ẩn thanh progress sau khi hoàn tất
       setTimeout(() => setProgress(0), 1000);
     }
   };
