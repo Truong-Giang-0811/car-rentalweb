@@ -296,11 +296,7 @@ function Dashboard() {
           {filteredCars.map((car) => (
             <div className="car-card" key={car.id}>
               <img
-                src={
-                  car.thumbnail
-                    ? `${BASE_URL}${car.thumbnail}`
-                    : "/images/default-car.jpg"
-                }
+                src={car.thumbnail ? car.thumbnail : "/images/default-car.jpg"}
                 alt={car.model}
                 className="car-image"
               />
