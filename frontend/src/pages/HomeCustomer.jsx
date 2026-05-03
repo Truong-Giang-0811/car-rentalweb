@@ -280,6 +280,7 @@ function HomeCustomer() {
   };
 
   const getCarImage = (car) => {
+    console.log("Dữ liệu xe:", car);
     const imagePath =
       car.thumbnail ||
       car.image ||
