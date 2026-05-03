@@ -176,7 +176,7 @@ function HomeCustomer() {
     const formatInputValue = (date) => {
       const pad = (n) => String(n).padStart(2, "0");
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-        date.getDate()
+        date.getDate(),
       )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     };
 
@@ -291,9 +291,7 @@ function HomeCustomer() {
       null;
 
     if (!imagePath) return "/images/car-placeholder.jpg";
-    if (imagePath.startsWith("http")) return imagePath;
-
-    return `http://localhost:5000${imagePath}`;
+    return imagePath;
   };
 
   const normalizeCar = (car) => {
@@ -348,25 +346,25 @@ function HomeCustomer() {
 
   const handlePrevPromo = () => {
     setPromoIndex((prev) =>
-      prev <= 0 ? promotions.length - visiblePromoCount : prev - 1
+      prev <= 0 ? promotions.length - visiblePromoCount : prev - 1,
     );
   };
 
   const handleNextPromo = () => {
     setPromoIndex((prev) =>
-      prev >= promotions.length - visiblePromoCount ? 0 : prev + 1
+      prev >= promotions.length - visiblePromoCount ? 0 : prev + 1,
     );
   };
 
   const handlePrevLocation = () => {
     setLocationIndex((prev) =>
-      prev <= 0 ? locations.length - visibleLocationCount : prev - 1
+      prev <= 0 ? locations.length - visibleLocationCount : prev - 1,
     );
   };
 
   const handleNextLocation = () => {
     setLocationIndex((prev) =>
-      prev >= locations.length - visibleLocationCount ? 0 : prev + 1
+      prev >= locations.length - visibleLocationCount ? 0 : prev + 1,
     );
   };
 
@@ -1706,12 +1704,18 @@ function HomeCustomer() {
             <div className="featured-grid">
               {displayCars.map((car, index) =>
                 car ? (
-                  <div className="car-card" key={car.id}
-                          onClick={() => navigate(`/cars/${car.id}`)}
-                          style={{ cursor: "pointer" }}
+                  <div
+                    className="car-card"
+                    key={car.id}
+                    onClick={() => navigate(`/cars/${car.id}`)}
+                    style={{ cursor: "pointer" }}
                   >
                     <div className="car-image-wrap">
-                      <img src={car.image} alt={car.name} className="car-image" />
+                      <img
+                        src={car.image}
+                        alt={car.name}
+                        className="car-image"
+                      />
                       <div className="car-badge-top">⚡</div>
                     </div>
 
@@ -1743,12 +1747,15 @@ function HomeCustomer() {
                     </div>
                   </div>
                 ) : (
-                  <div className="car-card car-card-placeholder" key={`empty-${index}`}>
+                  <div
+                    className="car-card car-card-placeholder"
+                    key={`empty-${index}`}
+                  >
                     <div className="car-placeholder-inner">
                       <span>Đang cập nhật xe mới</span>
                     </div>
                   </div>
-                )
+                ),
               )}
             </div>
           </div>
@@ -1761,7 +1768,10 @@ function HomeCustomer() {
             </div>
 
             <div className="location-wrapper">
-              <button className="location-btn left" onClick={handlePrevLocation}>
+              <button
+                className="location-btn left"
+                onClick={handlePrevLocation}
+              >
                 ❮
               </button>
 
@@ -1793,7 +1803,10 @@ function HomeCustomer() {
                 </div>
               </div>
 
-              <button className="location-btn right" onClick={handleNextLocation}>
+              <button
+                className="location-btn right"
+                onClick={handleNextLocation}
+              >
                 ❯
               </button>
             </div>
@@ -1858,7 +1871,8 @@ function HomeCustomer() {
             <div className="steps-header">
               <h2 className="steps-title">Hướng Dẫn Thuê Xe</h2>
               <p className="steps-subtitle">
-                Chỉ với 4 bước đơn giản để trải nghiệm thuê xe Kongcars một cách nhanh chóng
+                Chỉ với 4 bước đơn giản để trải nghiệm thuê xe Kongcars một cách
+                nhanh chóng
               </p>
             </div>
 
@@ -1866,7 +1880,11 @@ function HomeCustomer() {
               {rentalSteps.map((step) => (
                 <div className="step-card" key={step.id}>
                   <div className="step-image-wrap">
-                    <img src={step.image} alt={step.title} className="step-image" />
+                    <img
+                      src={step.image}
+                      alt={step.title}
+                      className="step-image"
+                    />
                   </div>
 
                   <div className="step-text">

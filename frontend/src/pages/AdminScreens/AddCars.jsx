@@ -268,7 +268,10 @@ function AddCar() {
       );
 
       // Điều hướng
-      setTimeout(() => navigate(editMode ? "/admin/cars" : "/cars"), 1500);
+      setTimeout(
+        () => navigate(editMode ? "/admin/cars" : "/admin/cars"),
+        1500,
+      );
     } catch (error) {
       addNotification("error", "Lỗi", error.message);
     } finally {
