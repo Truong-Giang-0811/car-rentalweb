@@ -126,19 +126,6 @@ export const carBrands = [
     ],
   },
   {
-    brand: "Chevrolet",
-    models: [
-      "Trailblazer",
-      "Colorado",
-      "Spark",
-      "Cruze",
-      "Malibu",
-      "Captiva",
-      "Orlando",
-      "Aveo",
-    ],
-  },
-  {
     brand: "Mercedes-Benz",
     models: [
       "C-Class",
@@ -210,19 +197,6 @@ export const carBrands = [
       "Logan",
       "Sandero",
       "Talisman",
-    ],
-  },
-  {
-    brand: "Isuzu",
-    models: [
-      "D-Max",
-      "mu-X",
-      "ELF",
-      "FVR",
-      "GIGA",
-      "Forward",
-      "N-Series",
-      "F-Series",
     ],
   },
   {

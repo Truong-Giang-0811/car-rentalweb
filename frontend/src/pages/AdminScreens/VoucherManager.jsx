@@ -64,7 +64,9 @@ function VoucherManagement() {
       title: voucher.title || "",
       codePrefix: voucher.codePrefix || "",
       discountType:
-      voucher.discountType === "Percentage" || voucher.discountType === 1 ? 1 : 0,
+        voucher.discountType === "Percentage" || voucher.discountType === 1
+          ? 1
+          : 0,
       discountValue: voucher.discountValue ?? "",
       maxDiscountValue: voucher.maxDiscountValue ?? "",
       minOrderValue: voucher.minOrderValue ?? "",
@@ -84,7 +86,7 @@ function VoucherManagement() {
     const date = new Date(value);
     const pad = (n) => String(n).padStart(2, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-      date.getDate()
+      date.getDate(),
     )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
@@ -103,57 +105,42 @@ function VoucherManagement() {
     const start = new Date(voucher.startAt);
     const end = new Date(voucher.endAt);
 
-    if (!voucher.isActive) {
-      return { text: "Tắt", className: "Inactive" };
-    }
-
-    if (now < start) {
-      return { text: "Sắp chạy", className: "Upcoming" };
-    }
-
-    if (now > end) {
-      return { text: "Hết hạn", className: "Expired" };
-    }
-
+    if (!voucher.isActive) return { text: "Tắt", className: "Inactive" };
+    if (now < start) return { text: "Sắp chạy", className: "Upcoming" };
+    if (now > end) return { text: "Hết hạn", className: "Expired" };
     return { text: "Đang chạy", className: "Active" };
   };
 
   const buildVoucherTitle = (voucher) => {
-    if (voucher.discountType === 1) {
-      return `Giảm ${voucher.discountValue}%`;
-    }
+    if (voucher.discountType === 1) return `Giảm ${voucher.discountValue}%`;
     return `Giảm ${Number(voucher.discountValue || 0).toLocaleString("vi-VN")}đ`;
   };
 
   const validateForm = () => {
     if (!form.title.trim()) return "Vui lòng nhập tên voucher.";
-    if (form.discountValue === "" || Number(form.discountValue) <= 0) {
+    if (form.discountValue === "" || Number(form.discountValue) <= 0)
       return "Giá trị giảm phải lớn hơn 0.";
-    }
-    if (!form.startAt || !form.endAt) {
+    if (!form.startAt || !form.endAt)
       return "Vui lòng chọn thời gian bắt đầu và kết thúc.";
-    }
-    if (new Date(form.endAt) <= new Date(form.startAt)) {
+    if (new Date(form.endAt) <= new Date(form.startAt))
       return "Thời gian kết thúc phải sau thời gian bắt đầu.";
-    }
     return "";
   };
 
   const handleChange = (field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const buildPayload = () => ({
     title: form.title.trim(),
     codePrefix: form.codePrefix.trim() || null,
-    discountType: Number(form.discountType) === 1 ? "Percentage" : "FixedAmount",
+    discountType:
+      Number(form.discountType) === 1 ? "Percentage" : "FixedAmount",
     discountValue: Number(form.discountValue || 0),
     maxDiscountValue:
       form.maxDiscountValue === "" ? null : Number(form.maxDiscountValue),
-    minOrderValue: form.minOrderValue === "" ? null : Number(form.minOrderValue),
+    minOrderValue:
+      form.minOrderValue === "" ? null : Number(form.minOrderValue),
     totalQuantity: Number(form.totalQuantity || 0),
     redeemPoints: Number(form.redeemPoints || 0),
     isRedeemable: form.isRedeemable,
@@ -165,7 +152,6 @@ function VoucherManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const message = validateForm();
     if (message) {
       alert(message);
@@ -195,7 +181,9 @@ function VoucherManagement() {
   };
 
   const handleDelete = async (voucher) => {
-    const ok = window.confirm(`Bạn có chắc muốn xóa voucher "${voucher.title}"?`);
+    const ok = window.confirm(
+      `Bạn có chắc muốn xóa voucher "${voucher.title}"?`,
+    );
     if (!ok) return;
 
     try {
@@ -214,32 +202,35 @@ function VoucherManagement() {
         Number(voucher.totalQuantity || 0) > 0
           ? Math.min(
               100,
-              Math.round((Number(voucher.usedQuantity || 0) / Number(voucher.totalQuantity)) * 100)
+              Math.round(
+                (Number(voucher.usedQuantity || 0) /
+                  Number(voucher.totalQuantity)) *
+                  100,
+              ),
             )
           : 0;
-
-      return {
-        ...voucher,
-        status,
-        usedPercent,
-      };
+      return { ...voucher, status, usedPercent };
     });
   }, [vouchers]);
 
   return (
     <div className="voucher-container">
       <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+
         .voucher-container {
           font-family: Inter, sans-serif;
           padding: 20px;
         }
 
+        /* ── Header ── */
         .header-flex {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px;
-          gap: 16px;
+          margin-bottom: 28px;
+          gap: 12px;
+          flex-wrap: wrap;
         }
 
         .header-flex h1 {
@@ -253,7 +244,7 @@ function VoucherManagement() {
           background: #16a34a;
           color: white;
           border: none;
-          padding: 12px 24px;
+          padding: 12px 22px;
           border-radius: 12px;
           font-weight: 700;
           cursor: pointer;
@@ -261,6 +252,8 @@ function VoucherManagement() {
           display: flex;
           align-items: center;
           gap: 8px;
+          white-space: nowrap;
+          font-size: 0.95rem;
         }
 
         .btn-add-voucher:hover {
@@ -268,9 +261,10 @@ function VoucherManagement() {
           transform: translateY(-2px);
         }
 
+        /* ── Voucher grid ── */
         .voucher-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 20px;
         }
 
@@ -285,12 +279,13 @@ function VoucherManagement() {
         }
 
         .voucher-card:hover {
-          transform: translateY(-5px);
+          transform: translateY(-4px);
           box-shadow: 0 12px 20px rgba(0,0,0,0.05);
         }
 
         .voucher-left {
-          width: 110px;
+          width: 100px;
+          flex-shrink: 0;
           background: #f1f5f9;
           display: flex;
           flex-direction: column;
@@ -300,40 +295,18 @@ function VoucherManagement() {
           border-right: 2px dashed #e2e8f0;
         }
 
-        .voucher-card.Active .voucher-left {
-          background: #dcfce7;
-          color: #16a34a;
-        }
+        .voucher-card.Active .voucher-left  { background: #dcfce7; color: #16a34a; }
+        .voucher-card.Expired .voucher-left { background: #fee2e2; color: #dc2626; }
+        .voucher-card.Upcoming .voucher-left{ background: #fef9c3; color: #ca8a04; }
+        .voucher-card.Inactive .voucher-left{ background: #f1f5f9; color: #64748b; }
 
-        .voucher-card.Expired .voucher-left {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .voucher-card.Upcoming .voucher-left {
-          background: #fef9c3;
-          color: #ca8a04;
-        }
-
-        .voucher-card.Inactive .voucher-left {
-          background: #f1f5f9;
-          color: #64748b;
-        }
-
-        .discount-val {
-          font-size: 1.5rem;
-          font-weight: 900;
-          text-align: center;
-        }
-
-        .discount-unit {
-          font-size: 0.8rem;
-          font-weight: 700;
-        }
+        .discount-val { font-size: 1.4rem; font-weight: 900; text-align: center; }
+        .discount-unit { font-size: 0.78rem; font-weight: 700; }
 
         .voucher-right {
           flex: 1;
-          padding: 16px;
+          min-width: 0;
+          padding: 14px;
           position: relative;
         }
 
@@ -341,101 +314,84 @@ function VoucherManagement() {
           display: inline-block;
           background: #f8fafc;
           border: 1px dashed #cbd5e1;
-          padding: 4px 12px;
+          padding: 3px 10px;
           border-radius: 6px;
           font-family: monospace;
           font-weight: 700;
           color: #334155;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
+          font-size: 0.88rem;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .voucher-title {
           font-weight: 800;
-          font-size: 1rem;
+          font-size: 0.95rem;
           color: #1e293b;
           margin-bottom: 4px;
         }
 
         .voucher-desc {
-          font-size: 0.8rem;
+          font-size: 0.78rem;
           color: #64748b;
           line-height: 1.5;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
         .voucher-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 12px;
+          gap: 6px;
+          margin-bottom: 10px;
         }
 
         .voucher-tag {
-          font-size: 0.72rem;
+          font-size: 0.7rem;
           font-weight: 700;
-          padding: 4px 8px;
+          padding: 3px 8px;
           border-radius: 999px;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
           color: #475569;
         }
 
-        .usage-container {
-          margin-top: 10px;
-        }
+        .usage-container { margin-top: 8px; }
 
         .usage-label {
           display: flex;
           justify-content: space-between;
-          font-size: 0.75rem;
+          font-size: 0.74rem;
           font-weight: 700;
           margin-bottom: 4px;
         }
 
         .usage-bar {
           width: 100%;
-          height: 6px;
+          height: 5px;
           background: #f1f5f9;
           border-radius: 3px;
           overflow: hidden;
         }
 
-        .usage-fill {
-          height: 100%;
-          background: #16a34a;
-          border-radius: 3px;
-        }
+        .usage-fill { height: 100%; border-radius: 3px; }
 
         .status-badge {
           position: absolute;
-          top: 12px;
-          right: 12px;
-          font-size: 0.7rem;
+          top: 10px;
+          right: 10px;
+          font-size: 0.68rem;
           font-weight: 800;
           padding: 2px 8px;
           border-radius: 6px;
           text-transform: uppercase;
         }
 
-        .Active .status-badge {
-          background: #dcfce7;
-          color: #16a34a;
-        }
-
-        .Expired .status-badge {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .Upcoming .status-badge {
-          background: #fef9c3;
-          color: #ca8a04;
-        }
-
-        .Inactive .status-badge {
-          background: #e2e8f0;
-          color: #475569;
-        }
+        .Active .status-badge   { background: #dcfce7; color: #16a34a; }
+        .Expired .status-badge  { background: #fee2e2; color: #dc2626; }
+        .Upcoming .status-badge { background: #fef9c3; color: #ca8a04; }
+        .Inactive .status-badge { background: #e2e8f0; color: #475569; }
 
         .cutout {
           position: absolute;
@@ -443,20 +399,15 @@ function VoucherManagement() {
           height: 20px;
           background: #f1f5f9;
           border-radius: 50%;
-          left: 100px;
+          left: 90px;
           z-index: 1;
         }
 
-        .cutout-top {
-          top: -10px;
-        }
-
-        .cutout-bottom {
-          bottom: -10px;
-        }
+        .cutout-top    { top: -10px; }
+        .cutout-bottom { bottom: -10px; }
 
         .voucher-actions {
-          margin-top: 15px;
+          margin-top: 12px;
           display: flex;
           gap: 10px;
         }
@@ -470,16 +421,10 @@ function VoucherManagement() {
           padding: 0;
         }
 
-        .edit-btn {
-          color: #2563eb;
-        }
+        .edit-btn   { color: #2563eb; }
+        .delete-btn { color: #dc2626; }
 
-        .delete-btn {
-          color: #dc2626;
-        }
-
-        .loading-box,
-        .empty-box {
+        .loading-box, .empty-box {
           background: #fff;
           border: 1px solid #e2e8f0;
           border-radius: 18px;
@@ -488,139 +433,184 @@ function VoucherManagement() {
           color: #64748b;
         }
 
+        /* ── Modal overlay ── */
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(15, 23, 42, 0.45);
+          background: rgba(15, 23, 42, 0.5);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
-          padding: 20px;
+          padding: 16px;
+          /* Allow overlay itself to scroll on very small phones */
+          overflow-y: auto;
         }
 
+        /* ── Modal box ── */
         .modal-box {
           width: min(760px, 100%);
           background: white;
           border-radius: 20px;
           box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+          display: flex;
+          flex-direction: column;
+          /* Max height so it never overflows viewport */
+          max-height: calc(100vh - 32px);
           overflow: hidden;
+          margin: auto;
         }
 
         .modal-header {
-          padding: 20px 24px;
+          padding: 18px 22px;
           border-bottom: 1px solid #e5e7eb;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-shrink: 0;
         }
 
         .modal-header h2 {
           margin: 0;
-          font-size: 1.3rem;
+          font-size: 1.2rem;
           font-weight: 800;
         }
 
         .close-btn {
           border: none;
           background: none;
-          font-size: 1.4rem;
+          font-size: 1.5rem;
           cursor: pointer;
+          line-height: 1;
+          padding: 0 4px;
+          color: #64748b;
         }
 
+        /* ── Scrollable body ── */
         .modal-body {
-          padding: 24px;
+          padding: 20px 22px;
+          overflow-y: auto;
+          flex: 1;
+          -webkit-overflow-scrolling: touch;
         }
 
+        /* ── Form grid ── */
         .form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 14px;
         }
 
-        .form-group.full {
-          grid-column: 1 / -1;
-        }
+        .form-group.full { grid-column: 1 / -1; }
 
         .form-group label {
           display: block;
-          font-size: 0.9rem;
+          font-size: 0.88rem;
           font-weight: 700;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           color: #334155;
         }
 
         .form-group input,
         .form-group select {
           width: 100%;
-          height: 46px;
+          height: 44px;
           border-radius: 12px;
           border: 1px solid #dbe2ea;
-          padding: 0 14px;
-          font-size: 0.95rem;
+          padding: 0 12px;
+          font-size: 0.92rem;
           outline: none;
+          background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+          border-color: #16a34a;
+          box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
         }
 
         .form-check-row {
           display: flex;
           align-items: center;
-          gap: 18px;
+          gap: 16px;
           flex-wrap: wrap;
-          margin-top: 8px;
+          margin-top: 6px;
         }
 
         .form-check {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
           font-weight: 600;
           color: #334155;
-        }
-
-        .form-check input {
-          width: auto;
-          height: auto;
-        }
-
-        .modal-footer {
-          padding: 18px 24px 24px;
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-        }
-
-        .btn-secondary,
-        .btn-primary {
-          border: none;
-          border-radius: 12px;
-          padding: 12px 18px;
-          font-weight: 700;
+          font-size: 0.88rem;
           cursor: pointer;
         }
 
-        .btn-secondary {
-          background: #e2e8f0;
-          color: #0f172a;
+        .form-check input { width: auto; height: auto; }
+
+        /* ── Modal footer ── */
+        .modal-footer {
+          padding: 16px 22px 20px;
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          border-top: 1px solid #f1f5f9;
+          flex-shrink: 0;
         }
 
-        .btn-primary {
-          background: #16a34a;
-          color: white;
+        .btn-secondary, .btn-primary {
+          border: none;
+          border-radius: 12px;
+          padding: 11px 18px;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 0.92rem;
         }
 
-        .btn-primary:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
+        .btn-secondary { background: #e2e8f0; color: #0f172a; }
+        .btn-primary   { background: #16a34a; color: white; }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ── Tablet ── */
+        @media (max-width: 1024px) {
+          .voucher-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
         }
 
+        /* ── Mobile: ≤ 768px ── */
         @media (max-width: 768px) {
-          .form-grid {
-            grid-template-columns: 1fr;
+          .voucher-container { padding: 16px; }
+
+          .header-flex h1 { font-size: 1.4rem; }
+
+          .voucher-grid { grid-template-columns: 1fr; gap: 14px; }
+
+          /* Modal takes full width with small side padding */
+          .modal-overlay { padding: 10px; align-items: flex-end; }
+          .modal-box {
+            border-radius: 20px 20px 16px 16px;
+            max-height: 92vh;
+            width: 100%;
           }
 
-          .voucher-grid {
-            grid-template-columns: 1fr;
-          }
+          /* Form goes single-column on mobile */
+          .form-grid { grid-template-columns: 1fr; gap: 12px; }
+          .form-group.full { grid-column: 1; }
+
+          .modal-body { padding: 16px; }
+          .modal-header { padding: 14px 16px; }
+          .modal-footer { padding: 12px 16px 16px; }
+
+          .form-check-row { gap: 12px; }
+        }
+
+        /* ── Small mobile: ≤ 480px ── */
+        @media (max-width: 480px) {
+          .header-flex h1 { font-size: 1.15rem; }
+          .btn-add-voucher { padding: 10px 14px; font-size: 0.88rem; }
+          .voucher-left { width: 85px; }
+          .cutout { left: 75px; }
+          .discount-val { font-size: 1.2rem; }
         }
       `}</style>
 
@@ -657,9 +647,7 @@ function VoucherManagement() {
                 <span className="status-badge">{v.status.text}</span>
 
                 <div className="voucher-code">{v.codePrefix || "NO-CODE"}</div>
-
                 <div className="voucher-title">{buildVoucherTitle(v)}</div>
-
                 <div className="voucher-desc">
                   Tên: {v.title}
                   <br />
@@ -697,9 +685,11 @@ function VoucherManagement() {
                       style={{
                         width: `${v.usedPercent}%`,
                         backgroundColor:
-                          v.status.className === "Expired" ? "#cbd5e1" : "#16a34a",
+                          v.status.className === "Expired"
+                            ? "#cbd5e1"
+                            : "#16a34a",
                       }}
-                    ></div>
+                    />
                   </div>
                 </div>
 
@@ -733,7 +723,7 @@ function VoucherManagement() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} style={{ display: "contents" }}>
               <div className="modal-body">
                 <div className="form-grid">
                   <div className="form-group full">
@@ -751,7 +741,9 @@ function VoucherManagement() {
                     <input
                       type="text"
                       value={form.codePrefix}
-                      onChange={(e) => handleChange("codePrefix", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("codePrefix", e.target.value)
+                      }
                       placeholder="Ví dụ: SALE50"
                     />
                   </div>
@@ -860,7 +852,6 @@ function VoucherManagement() {
                         />
                         Có thể đổi bằng điểm
                       </label>
-
                       <label className="form-check">
                         <input
                           type="checkbox"
@@ -871,7 +862,6 @@ function VoucherManagement() {
                         />
                         Hiện ở chương trình khuyến mãi
                       </label>
-
                       <label className="form-check">
                         <input
                           type="checkbox"
@@ -895,12 +885,16 @@ function VoucherManagement() {
                 >
                   Hủy
                 </button>
-                <button type="submit" className="btn-primary" disabled={submitting}>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={submitting}
+                >
                   {submitting
                     ? "Đang xử lý..."
                     : editingVoucher
-                    ? "Lưu thay đổi"
-                    : "Tạo voucher"}
+                      ? "Lưu thay đổi"
+                      : "Tạo voucher"}
                 </button>
               </div>
             </form>

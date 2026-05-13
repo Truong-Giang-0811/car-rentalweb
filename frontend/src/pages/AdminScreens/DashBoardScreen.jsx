@@ -1,33 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyCars } from "../../services/carsService";
-import { getRecentOwnerBookings } from "../../services/bookingsService"; // Import service lấy đơn hàng
-import { BASE_URL } from "../../constants/config";
+import { getRecentOwnerBookings } from "../../services/bookingsService";
+import { carBrands } from "../../constants/mockdata"; // ← Đường dẫn có thể cần chỉnh sửa
 
 function Dashboard() {
   const navigate = useNavigate();
-  const brands = [
-    { id: "all", name: "Tất cả", icon: "▦" },
-    { id: "toyota", name: "Toyota", icon: "🚗" },
-    { id: "kia", name: "KIA", icon: "🚙" },
-    { id: "hyundai", name: "Hyundai", icon: "🚘" },
-    { id: "ford", name: "Ford", icon: "🚐" },
-  ];
 
   const [cars, setCars] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("all");
-
-  // Thay thế dữ liệu mẫu bằng State
   const [recentOrders, setRecentOrders] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Lấy danh sách xe
         const carsData = await getMyCars();
         setCars(carsData);
 
-        // Lấy 3 đơn hàng gần đây
         const ordersData = await getRecentOwnerBookings(3);
         setRecentOrders(ordersData);
       } catch (error) {
@@ -37,13 +26,16 @@ function Dashboard() {
     fetchData();
   }, []);
 
-  const filteredCars = cars;
+  // Lọc xe theo hãng được chọn
+  const filteredCars =
+    selectedBrand === "all"
+      ? cars
+      : cars.filter(
+          (car) => car.brand?.toLowerCase() === selectedBrand.toLowerCase(),
+        );
 
-  // Hàm chuyển đổi trạng thái từ Backend sang Tiếng Việt và CSS Class
   const getStatusInfo = (status) => {
-    // ép kiểu về string nếu backend trả về số hoặc chuỗi
     const statusKey = String(status);
-
     switch (statusKey) {
       case "0":
       case "Pending":
@@ -77,7 +69,6 @@ function Dashboard() {
     }
   };
 
-  // Hàm format ngày tháng từ chuỗi ISO
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -93,11 +84,13 @@ function Dashboard() {
   return (
     <>
       <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
 
+        /* ── Welcome card ── */
         .welcome-card {
           background: linear-gradient(135deg, #0f172a, #1d4ed8);
-          border-radius: 28px;
-          padding: 32px;
+          border-radius: 24px;
+          padding: 32px 36px;
           color: #fff;
           margin-bottom: 24px;
           position: relative;
@@ -113,122 +106,249 @@ function Dashboard() {
           height: 220px;
           border-radius: 50%;
           background: rgba(255,255,255,0.08);
+          pointer-events: none;
         }
 
-        .status-pill { padding: 6px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
-        .status-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-        .status-waiting { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-        .status-confirmed { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .status-pickedup { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
-        .status-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .status-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-        .status-cancelled { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
-        .status-expired { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
-        .status-settlement { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
         .welcome-title {
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 900;
-          margin-bottom: 10px;
+          margin: 0 0 10px;
           position: relative;
           z-index: 1;
         }
 
         .welcome-text {
           max-width: 720px;
-          color: rgba(255,255,255,0.88);
+          color: rgba(255,255,255,0.85);
           line-height: 1.7;
+          font-size: 0.97rem;
           position: relative;
           z-index: 1;
+          margin: 0;
         }
 
+        /* ── Stats grid ── */
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 18px;
+          gap: 16px;
           margin-bottom: 24px;
         }
 
         .stat-card {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 22px;
-          padding: 22px;
+          border-radius: 20px;
+          padding: 20px;
         }
 
-        .stat-label { color: #6b7280; font-size: 0.95rem; margin-bottom: 10px; }
-        .stat-value { font-size: 2rem; font-weight: 900; color: #0f172a; }
-        .stat-change { margin-top: 10px; font-size: 0.92rem; font-weight: 700; color: #16a34a; }
+        .stat-label {
+          color: #6b7280;
+          font-size: 0.88rem;
+          margin-bottom: 8px;
+          font-weight: 500;
+        }
 
+        .stat-value {
+          font-size: 1.85rem;
+          font-weight: 900;
+          color: #0f172a;
+          line-height: 1.1;
+        }
+
+        .stat-change {
+          margin-top: 8px;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #16a34a;
+        }
+
+        /* ── Section card ── */
         .section-card {
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 24px;
-          padding: 22px;
-          margin-bottom: 24px;
+          border-radius: 20px;
+          padding: 20px;
+          margin-bottom: 20px;
         }
 
         .section-head {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 18px;
+          margin-bottom: 16px;
+          gap: 12px;
         }
 
-        .section-title { font-size: 1.3rem; font-weight: 800; margin: 0; }
-        .section-link { color: #16a34a; font-weight: 700; cursor: pointer; }
+        .section-title {
+          font-size: 1.15rem;
+          font-weight: 800;
+          margin: 0;
+          color: #111827;
+        }
 
-        .brand-list { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+        .section-link {
+          color: #16a34a;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 0.9rem;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .section-link:hover { color: #15803d; }
+
+        /* ── Brand list ── */
+        .brand-list {
+          display: flex;
+          gap: 12px;
+          overflow-x: auto;
+          padding-bottom: 6px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+
+        .brand-list::-webkit-scrollbar { display: none; }
+
         .brand-card {
-          min-width: 120px;
+          min-width: 100px;
+          flex-shrink: 0;
           background: #f8fafc;
           border: 2px solid #eef2f7;
-          border-radius: 18px;
-          padding: 18px 14px;
+          border-radius: 16px;
+          padding: 14px 12px;
           text-align: center;
           cursor: pointer;
-          transition: 0.2s;
+          transition: border-color 0.18s, background 0.18s;
         }
 
         .brand-card.active { border-color: #22c55e; background: #ecfdf5; }
-        .brand-icon { font-size: 1.5rem; margin-bottom: 8px; }
-        .brand-name { font-weight: 800; color: #111827; }
+        .brand-card:hover:not(.active) { border-color: #d1fae5; }
 
-        .car-list { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 10px; }
+        .brand-icon { font-size: 1.4rem; margin-bottom: 6px; }
+        .brand-name { font-weight: 800; color: #111827; font-size: 0.9rem; }
+
+        /* ── Car list ── */
+        .car-list {
+          display: flex;
+          gap: 14px;
+          overflow-x: auto;
+          padding-bottom: 6px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+
+        .car-list::-webkit-scrollbar { display: none; }
+
         .car-card {
-          min-width: 270px;
-          border-radius: 20px;
+          min-width: 240px;
+          flex-shrink: 0;
+          border-radius: 16px;
           background: #fff;
-          border: 2px solid #eef2f7;
+          border: 1.5px solid #e5e7eb;
           overflow: hidden;
+          transition: border-color 0.18s;
         }
 
-        .car-image { height: 150px; width: 100%; object-fit: cover; }
-        .car-body { padding: 16px; }
-        .car-title { font-weight: 800; margin-bottom: 8px; }
-        .car-price { color: #16a34a; font-weight: 900; margin-top: 10px; }
-        .car-meta { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 0.9rem; }
-        .status-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
+        .car-card:hover { border-color: #86efac; }
+
+        .car-image { height: 140px; width: 100%; object-fit: cover; display: block; }
+        .car-body { padding: 14px; }
+        .car-title { font-weight: 800; margin-bottom: 8px; font-size: 0.95rem; color: #111827; }
+        .car-price { color: #16a34a; font-weight: 900; margin-top: 8px; font-size: 0.97rem; }
+
+        .car-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #6b7280;
+          font-size: 0.88rem;
+          flex-wrap: wrap;
+        }
+
+        .status-indicator {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 10px;
+          border-radius: 10px;
+          font-size: 0.82rem;
+          font-weight: 600;
+        }
+
         .status-active { background: #dcfce7; color: #166534; }
-        .status-active::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; }
+        .status-active::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
         .status-inactive { background: #fee2e2; color: #991b1b; }
-        .status-inactive::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; }
+        .status-inactive::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #dc2626; flex-shrink: 0; }
 
-        .orders-table { width: 100%; border-collapse: collapse; }
-        .orders-table th { text-align: left; color: #6b7280; padding: 12px; border-bottom: 1px solid #eef2f7; }
-        .orders-table td { padding: 12px; border-bottom: 1px solid #eef2f7; font-weight: 600; }
-
-        .status-pill {
-          padding: 6px 12px;
-          border-radius: 999px;
-          font-size: 0.8rem;
-          font-weight: 800;
+        /* ── Orders table ── */
+        .orders-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+        .orders-table th {
+          text-align: left;
+          color: #6b7280;
+          font-size: 0.85rem;
+          font-weight: 700;
+          padding: 10px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          background: #f8fafc;
+          white-space: nowrap;
         }
-        .status-pending { background: #fef3c7; color: #b45309; }
-        .status-approved { background: #dcfce7; color: #166534; }
-        .status-completed { background: #dbeafe; color: #1d4ed8; }
+        .orders-table th:first-child { border-radius: 10px 0 0 10px; }
+        .orders-table th:last-child { border-radius: 0 10px 10px 0; }
 
-        @media (max-width: 1024px) {
+        .orders-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          font-weight: 600;
+          font-size: 0.92rem;
+          color: #111827;
+          vertical-align: middle;
+        }
+
+        .orders-table tr:last-child td { border-bottom: none; }
+        .orders-table tr:hover td { background: #fafafa; }
+
+        /* ── Status pills ── */
+        .status-pill {
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          display: inline-block;
+          white-space: nowrap;
+        }
+
+        .status-pending   { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-waiting   { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+        .status-confirmed { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .status-pickedup  { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+        .status-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-rejected  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .status-cancelled { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .status-expired   { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+        .status-settlement{ background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+        .status-approved  { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* Responsive */
+        @media (max-width: 1199.98px) {
           .stats-grid { grid-template-columns: repeat(2, 1fr); }
+          .welcome-card { padding: 26px 28px; }
+          .welcome-title { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 768px) {
+          .welcome-card { padding: 20px; border-radius: 18px; margin-bottom: 16px; }
+          .welcome-title { font-size: 1.2rem; }
+          .welcome-text { font-size: 0.88rem; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .brand-card { min-width: 80px; padding: 10px 8px; border-radius: 12px; }
+          .car-card { min-width: 190px; }
+          .car-image { height: 115px; }
+        }
+
+        @media (max-width: 480px) {
+          .stat-value { font-size: 1.3rem; }
+          .welcome-title { font-size: 1.05rem; }
         }
       `}</style>
 
@@ -263,28 +383,56 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Hãng xe nổi bật */}
       <div className="section-card">
         <div className="section-head">
           <h2 className="section-title">Hãng xe nổi bật</h2>
           <div className="section-link">Xem thêm</div>
         </div>
         <div className="brand-list">
-          {brands.map((brand) => (
-            <div
-              key={brand.id}
-              className={`brand-card ${selectedBrand === brand.id ? "active" : ""}`}
-              onClick={() => setSelectedBrand(brand.id)}
-            >
-              <div className="brand-icon">{brand.icon}</div>
-              <div className="brand-name">{brand.name}</div>
-            </div>
-          ))}
+          {/* Tất cả */}
+          <div
+            className={`brand-card ${selectedBrand === "all" ? "active" : ""}`}
+            onClick={() => setSelectedBrand("all")}
+          >
+            <div className="brand-icon">▦</div>
+            <div className="brand-name">Tất cả</div>
+          </div>
+
+          {/* Các hãng từ mockdata */}
+          {carBrands.map((brandItem) => {
+            const brandId = brandItem.brand.toLowerCase();
+            return (
+              <div
+                key={brandId}
+                className={`brand-card ${selectedBrand === brandId ? "active" : ""}`}
+                onClick={() => setSelectedBrand(brandId)}
+              >
+                <div className="brand-icon">
+                  <img
+                    src={`https://beepaway.com/images/manufacturers/${brandId}.png`}
+                    alt={brandItem.brand}
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      objectFit: "contain",
+                    }}
+                  />
+                </div>
+                <div className="brand-name">{brandItem.brand}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
+      {/* Xe của tôi */}
       <div className="section-card">
         <div className="section-head">
-          <h2 className="section-title">Xe của tôi</h2>
+          <h2 className="section-title">
+            Xe của tôi
+            {selectedBrand !== "all" && ` - ${selectedBrand.toUpperCase()}`}
+          </h2>
           <div
             className="section-link"
             onClick={() => navigate("/admin/add-car")}
@@ -293,34 +441,50 @@ function Dashboard() {
           </div>
         </div>
         <div className="car-list">
-          {filteredCars.map((car) => (
-            <div className="car-card" key={car.id}>
-              <img
-                src={car.thumbnail ? car.thumbnail : "/images/default-car.jpg"}
-                alt={car.model}
-                className="car-image"
-              />
-              <div className="car-body">
-                <div className="car-title">
-                  {car.brand} {car.model} • {car.year}
-                </div>
-                <div className="car-meta">
-                  <span>{car.seats} chỗ</span> •{" "}
-                  <span
-                    className={`status-indicator ${car.isAvailable ? "status-active" : "status-inactive"}`}
-                  >
-                    {car.isAvailable ? "Đang hoạt động" : "Đang dừng"}
-                  </span>
-                </div>
-                <div className="car-price">
-                  {car.pricePerDay.toLocaleString("vi-VN")} / ngày
+          {filteredCars.length > 0 ? (
+            filteredCars.map((car) => (
+              <div className="car-card" key={car.id || car.licensePlate}>
+                <img
+                  src={
+                    car.thumbnail ? car.thumbnail : "/images/default-car.jpg"
+                  }
+                  alt={car.model}
+                  className="car-image"
+                />
+                <div className="car-body">
+                  <div className="car-title">
+                    {car.brand} {car.model} • {car.year}
+                  </div>
+                  <div className="car-meta">
+                    <span>{car.seats} chỗ</span> •{" "}
+                    <span
+                      className={`status-indicator ${car.isAvailable ? "status-active" : "status-inactive"}`}
+                    >
+                      {car.isAvailable ? "Đang hoạt động" : "Đang dừng"}
+                    </span>
+                  </div>
+                  <div className="car-price">
+                    {car.pricePerDay?.toLocaleString("vi-VN")} / ngày
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p
+              style={{
+                padding: "40px 20px",
+                color: "#6b7280",
+                textAlign: "center",
+                width: "100%",
+              }}
+            >
+              Không có xe nào thuộc hãng này.
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Đơn hàng gần đây */}
       <div className="section-card">
         <div className="section-head">
           <h2 className="section-title">Đơn hàng gần đây</h2>
@@ -358,7 +522,6 @@ function Dashboard() {
                   const statusInfo = getStatusInfo(order.status);
                   return (
                     <tr key={order.id}>
-                      {/* Cắt ngắn GUID lấy 8 ký tự đầu cho gọn */}
                       <td>#{order.id.substring(0, 8).toUpperCase()}</td>
                       <td>{order.carNameSnapshot}</td>
                       <td>{order.customerNameSnapshot}</td>

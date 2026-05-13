@@ -1420,11 +1420,11 @@ function CarDetail() {
           }
 
           .thumb-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, 1fr);
           }
 
           .thumb-item {
-            height: 120px;
+            height: 100px;
           }
 
           .car-head {
@@ -1436,9 +1436,13 @@ function CarDetail() {
             font-size: 1.7rem;
           }
 
-          .spec-grid,
+          .spec-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
           .feature-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 16px;
           }
 
           .booking-datetime-row {
